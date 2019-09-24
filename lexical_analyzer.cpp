@@ -5,16 +5,22 @@
 
 using namespace std;
 
-char ch;	// read file and get every character
-char buffer[15];	//store characters in an array to determine isKeyword or isNumber or isReal or isIdentifier
 char operators[] = "*+-=/><%";
-char separator[] = "(){}[],:;";
+char separator[] = "'(){}[],:;";
 char keywords[18][10] = { "int", "float", "bool", "if", "else", "then", "endif", "while", "whileend", "do", "doend","for", "forend", "input", "output", "and", "or", "function" };
 bool hasSep = false;	// check if has separater
 bool hasOpe = false;	// check if has operator
 bool printSep = false;	// check if printed separter
 bool printOpe = false;	//	check if printed operator
 int currentIndex = 0;	// index for check isNumber() and isReal()
+
+bool inOperator = false;
+bool endOperator = false;
+bool endSeparator = false;
+bool endNumber = false;
+bool endReal = false;
+bool inIdentifier = false;
+bool endIdentifier = false;
 
 bool isKeyword(char buffer[]) {
 	for (int i = 0; i < 18; ++i)
@@ -23,18 +29,20 @@ bool isKeyword(char buffer[]) {
 	return false;
 }
 
-bool isOperator(int index) {
-	if (ch == operators[index])
-		return true;
-	else
-		return false;
+bool isOperator(char ch) {
+	for (int i = 0; i < 10; ++i) {
+		if (ch == operators[i])
+			return true;
+	}
+	return false;	
 }
 
-bool isSeparator(int index) {
-	if (ch == separator[index])
-		return true;
-	else
-		return false;
+bool isSeparator(char ch) {
+	for (int i = 0; i < 10; ++i) {	//check separator
+		if (ch == separator[i])
+			return true;
+	}
+	return false;
 }
 
 bool isReal(char buffer[]) {
@@ -72,16 +80,20 @@ bool isNumber(char buffer[]) {
 
 
 int main() {
-	bool comment = false;	//check if it is comments
-	char detection[2] = { ' ', ' ' };	// detect '!' twice, if detect, add '!' to array according to occur times
+	char ch;	// read file and get every character
+	char buffer[15];	//store characters in an array to determine isKeyword or isNumber or isReal or isIdentifier
+	int j = 0;		// index for buffer[]
+	bool isComments = false;	//check if it is comments
+	char detection[2] = { '\0' };	// detect '!' twice, if detect, add '!' to array according to occur times
 	int x = 0;	// used to counting detection array
+	
 	string filename;
 	cout << "Please enter file name: ";
 	cin >> filename;
 
 	ifstream fin(filename);		//read file
-	int j = 0;		// index for buffer[]
-	
+
+
 	if (!fin.is_open()) {
 		cout << "error while opening the file\n";
 		exit(0);
@@ -90,80 +102,85 @@ int main() {
 
 	while (!fin.eof()) {
 		ch = fin.get();
-	
+
 		if (ch == '!') {	//check if is comment
 			detection[x] = ch;
 			x++;
 			if (detection[1] == ch) {
-				comment = false;
+				isComments = false;
 				x = 0;
-				detection[0] = ' ';
-				detection[1] = ' ';
+				detection[0] = '\0';
+				detection[1] = '\0';
 			}
 			else
-				comment = true;
+				isComments = true;
 		}
-		if (!comment) {	// if not comment, start lexical analyzer
+		if (!isComments) {	// if not comment, start lexical analyzer
 
-			for (int i = 0; i < 9; ++i) {	//check separator
-				if (isSeparator(i)) {
-					hasSep = true;
-					printSep = false;
-				}
+			
+			if (isSeparator(ch)) {
+				hasSep = true;
+				endSeparator = true;
 			}
 
-			for (int i = 0; i < 8; ++i) {	//check operator
-				if (isOperator(i)){
-					hasOpe = true;
-					printOpe = false;
-				}
+			if (isOperator(ch)) {
+				hasOpe = true;
+				endOperator = true;
 			}
 
 			if (isalnum(ch) || ch == '$' || ch == '.') {	// check ch is a number or letter or '$' or '.'
 				buffer[j++] = ch;		// if so, add to buffer
-				currentIndex++;	
+				currentIndex++;
 			}
 			else if ((ch == ' ' || ch == '\n' || hasSep || hasOpe) && (j != 0)) {	// end of variables by detecting if j(index for buffer[]) != 0
 				buffer[j] = '\0';	// set last char in buffer( might be ' ', '\n', separator, operator
 				j = 0;	// reset the index for buffer[]
-
 				if (isKeyword(buffer))	// check if the variable is keyword
 					cout << "KEYWORD         =     " << buffer << endl;
 				else if (isReal(buffer))	//check if the variable is real( number with '.')
-					cout << "REAL            =     " << buffer << endl;
+					endReal = true;
 				else if (isNumber(buffer)) //check if the variable is number 
-					cout << "NUMBER          =     " << buffer << endl;
-				else	//check if the variable is identifier
-					cout << "IDENTIFIER      =     " << buffer << endl;
-
-				if (hasSep) {	// print separator
-					cout << "SEPARATOR       =     " << ch << endl;
-					hasSep = false;
-					printSep = true;
+					endNumber = true;
+				else {	//check if the variable is identifier
+					if (!isdigit(buffer[0]))	// check if identifier not start with number
+						endIdentifier = true;
 				}
-				else if (hasOpe){	//print operator
-					cout << "OPERATOR        =     " << ch << endl;
-					hasOpe = false;
-					printOpe = true;
-				}
+				
 				currentIndex = 0;	// reset index for isNumber() and isReal()
 			}
 
-			if (hasSep && !printSep) {	// single separator detected, print it
+			if (endIdentifier) {
+				cout << "IDENTIFIER      =     " << buffer << endl;
+				endIdentifier = false;
+			}
+
+			if (endNumber) {
+				cout << "NUMBER          =     " << buffer << endl;
+				endNumber = false;
+			}
+
+			if (endReal) {
+				cout << "REAL            =     " << buffer << endl;
+				endReal = false;
+			}
+
+			if (endSeparator) {	// single separator detected, print it
 				cout << "SEPARATOR       =     " << ch << endl;
+				endSeparator = false;
 				printSep = true;
 				hasSep = false;
 			}
-			else if (hasOpe && !printOpe) { // single operator detected, print it
+			if (endOperator) { // single operator detected, print it
 				cout << "OPERATOR        =     " << ch << endl;
+				endOperator = false;
 				printOpe = true;
 				hasOpe = false;
-			}	
+			}
 		}
 	}
 
 	fin.close();	//close file
-	
+
 
 	system("pause");
 	return 0;
