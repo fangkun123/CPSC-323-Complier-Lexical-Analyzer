@@ -14,12 +14,11 @@ bool printSep = false;	// check if printed separter
 bool printOpe = false;	//	check if printed operator
 int currentIndex = 0;	// index for check isNumber() and isReal()
 
-bool inOperator = false;
+// FSM states for print
 bool endOperator = false;
 bool endSeparator = false;
 bool endNumber = false;
 bool endReal = false;
-bool inIdentifier = false;
 bool endIdentifier = false;
 
 bool isKeyword(char buffer[]) {
