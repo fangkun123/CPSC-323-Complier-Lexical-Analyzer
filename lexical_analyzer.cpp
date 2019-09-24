@@ -132,7 +132,7 @@ int main() {
 				buffer[j++] = ch;		// if so, add to buffer
 				currentIndex++;
 			}
-			else if ((ch == ' ' || ch == '\n' || hasSep || hasOpe) && (j != 0)) {	// end of variables by detecting if j(index for buffer[]) != 0
+			else if ((ch == ' ' || ch == '\n' || hasSep || hasOpe || fin.eof()) && (j != 0)) {	// end of variables by detecting if j(index for buffer[]) != 0
 				buffer[j] = '\0';	// set last char in buffer( might be ' ', '\n', separator, operator
 				j = 0;	// reset the index for buffer[]
 				if (isKeyword(buffer))	// check if the variable is keyword
