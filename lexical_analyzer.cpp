@@ -134,7 +134,7 @@ int main() {
 				else if (isNumber(buffer)) //check if the variable is number 
 					cout << "NUMBER          =     " << buffer << endl;
 				else	//check if the variable is identifier
-					cout << "IDENTIFIER     =     " << buffer << endl;
+					cout << "IDENTIFIER      =     " << buffer << endl;
 
 				if (hasSep) {	// print separator
 					cout << "SEPARATOR       =     " << ch << endl;
