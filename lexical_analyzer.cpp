@@ -8,6 +8,8 @@
 using namespace std;
 
 char ch, buffer[15], operators[] = "*+-=/><%", separator[] = "(){}[],.:;! ";
+bool hasSep = false;
+int currentIndex = 0;
 
 bool isKeyword(char buffer[]) {
 	char keywords[18][10] = { "int", "float", "bool", "if", "else", "then", "endif", "while", "whileend", "do", "doend",
@@ -34,13 +36,47 @@ bool isSeparator(int index) {
 		return false;
 }
 
+bool isReal(char buffer[]) {
+	string str(buffer);
+	string substr(".");
+
+	size_t found = str.find(substr);
+
+	if (found != string::npos) {
+		for (int i = 0; i < found; i++) {
+			if (!isdigit(buffer[i]))
+				return false;
+			continue;
+		}
+		for (int i = found + 1; i < currentIndex; i++) {
+			if (!isdigit(buffer[i]))
+				return false;
+			continue;
+		}
+		return true;
+	}
+	else
+		return false;
+}
+
+bool isNumber(char buffer[]) {
+	for (int i = 0; i <= (currentIndex - 1); i++) {
+		if (!isdigit(buffer[i]))
+			return false;
+		continue;
+	}
+	return true;
+}
 
 
 
 int main() {
+	bool comment = false;
+	char detection[2] = { ' ', ' ' };
+	int x = 0;
 	ifstream fin("program.txt");
 	int j = 0;
-
+	
 	if (!fin.is_open()) {
 		cout << "error while opening the file\n";
 		exit(0);
@@ -49,38 +85,69 @@ int main() {
 
 	while (!fin.eof()) {
 		ch = fin.get();
-
-		for (int i = 0; i < 6; ++i) {
-			if (isOperator(i))
-				cout << "OPERATOR        =     "<< ch << endl; //8
+	
+		if (ch == '!') {
+			detection[x] = ch;
+			x++;
+			if (detection[1] == ch) {
+				comment = false;
+				x = 0;
+				detection[0] = ' ';
+				detection[1] = ' ';
+			}
+			else
+				comment = true;
 		}
+		if (!comment) {
 
-		for (int i = 0; i < 12; ++i) {
-			if (isSeparator(i)) {
-				if (ch == '!') {
-					continue;
+			for (int i = 0; i < 12; ++i) {
+				if (isSeparator(i)) {
+					if (ch == '!') {
+						continue;
+					}
+					else if (ch == ' ') {
+						continue;
+					}
+					else if (ch == '.') {
+						continue;
+					}
+					else {
+						cout << "SEPARATOR       =     " << ch << endl;
+						hasSep = true;
+					}
 				}
-				else if (ch == ' ') {
-					continue;
-				}
-				else
-					cout << "SEPARATOR       =     " << ch << endl; // 9
+			}
+
+			if (isalnum(ch) || ch == '$' || ch == '.') {
+				buffer[j++] = ch;
+				currentIndex++;
+			}
+			else if ((ch == ' ' || ch == '\n' || hasSep) && (j != 0)) {
+				buffer[j] = '\0';
+				j = 0;
+
+				if (isKeyword(buffer))
+					cout << "KEYWORD         =     " << buffer << endl;
+				else if (isReal(buffer))
+					cout << "REAL            =     " << buffer << endl;
+				else if (isNumber(buffer))
+					cout << "NUMBER          =     " << buffer << endl;
+				else // isIdentifier
+					cout << "INDENTIFIER     =     " << buffer << endl;
+
+				currentIndex = 0;
+				//if(hasSep){
+			//		cout << "SEPARATOR       =     " << ch << endl;
+			//	}
+			}
+
+			for (int i = 0; i < 8; ++i) {
+				if (isOperator(i))
+					cout << "OPERATOR        =     " << ch << endl; //8
 			}
 		}
 
 
-		if (isalnum(ch) || ch == '$') {
-			buffer[j++] = ch;
-		}
-		else if ((ch == ' ' || ch == '\n') && (j != 0)) {
-			buffer[j] = '\0';
-			j = 0;
-
-			if (isKeyword(buffer))
-				cout << "KEYWORD         =     " << buffer << endl; //7
-			else // isIdentifier
-				cout << "INDENTIFIER     =     " << buffer << endl; //11
-		}
 
 	}
 
