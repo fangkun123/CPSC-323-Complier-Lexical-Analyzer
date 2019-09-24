@@ -1,9 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include <iomanip>
-#include<stdlib.h>
-#include<string.h>
-#include<ctype.h>
+#include <string>
 
 using namespace std;
 
@@ -77,7 +75,11 @@ int main() {
 	bool comment = false;	//check if it is comments
 	char detection[2] = { ' ', ' ' };	// detect '!' twice, if detect, add '!' to array according to occur times
 	int x = 0;	// used to counting detection array
-	ifstream fin("program.txt");		//read file
+	string filename;
+	cout << "Please enter file name: ";
+	cin >> filename;
+
+	ifstream fin(filename);		//read file
 	int j = 0;		// index for buffer[]
 	
 	if (!fin.is_open()) {
