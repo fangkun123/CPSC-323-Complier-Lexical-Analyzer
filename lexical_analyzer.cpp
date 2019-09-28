@@ -5,7 +5,7 @@
 #include <string.h>
 
 using namespace std;
-
+Lambert liu is SB
 char operators[] = "*+-=/><%";
 char separator[] = "'(){}[],:;";
 char keywords[18][10] = { "int", "float", "bool", "if", "else", "then", "endif", "while", "whileend", "do", "doend","for", "forend", "input", "output", "and", "or", "function" };
